@@ -1,0 +1,24 @@
+---
+
+- name: Install Apache and Upload Webpage
+  hosts: staging
+  become: true
+
+  vars:
+    source_file: ./MyWebsite/
+    destin_file: /var/www/html
+
+  tasks:
+  - name: Install Apache Web Server
+    yum: name=httpd state=latest
+
+  - name: Copy MyhomePage to Server
+    copy: src={{source_file}} dest={{destin_file}} mode=0555
+    notify: Restart Apache
+
+  - name: Start WebServer and make it enable on boot
+    service: name=httpd state=started enabled=yes
+
+  handlers:
+    - name: Restart Apache
+      service: name=httpd state=restarted

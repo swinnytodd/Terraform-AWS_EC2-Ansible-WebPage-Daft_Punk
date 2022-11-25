@@ -1,0 +1,7 @@
+[staging]
+linux_ec2
+
+[ansible_test]
+linux_ec2 ansible_host=52.17.56.194
+
+

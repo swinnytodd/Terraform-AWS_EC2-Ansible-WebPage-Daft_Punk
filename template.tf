@@ -1,25 +1,28 @@
 provider "aws" {
-  region = "eu-west-1"
+  region = var.region
 }
 
 resource "aws_default_vpc" "default" {} # This need to be added since AWS Provider v4.29+ to get VPC id
 
-resource "aws_instance" "my_server_web" {
-  ami                    = "ami-01cae1550c0adea9c"
-  instance_type          = "t2.micro"
-  key_name               = "aws_key"
-  vpc_security_group_ids = [aws_security_group.ansible.id]
-  user_data       =        file("user_data.sh")
-
-  tags = {
-    Name = "Ansible-Test"
+data "aws_ami" "latest_amazon_linux" {
+  owners      = ["amazon"]
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
 
-output "public_ip" {
-  value       = aws_instance.my_server_web
-  description = "The public IP address of the web server"
+
+resource "aws_instance" "my_server_web" {
+  ami                    = data.aws_ami.latest_amazon_linux.id
+  instance_type          = var.instance_type
+  key_name               = "aws_key"
+  vpc_security_group_ids = [aws_security_group.ansible.id]
+  user_data       =        file("user_data.sh")
+  tags = var.my_server_web_tags
 }
+
 
 resource "aws_security_group" "ansible" {
   name   = "Security Group Ansible"
@@ -27,7 +30,7 @@ resource "aws_security_group" "ansible" {
 
 
   dynamic "ingress" {
-    for_each = ["80", "443", "22", "8080"]
+    for_each = var.allow_ports
     content {
       from_port   = ingress.value
       to_port     = ingress.value

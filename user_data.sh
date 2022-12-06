@@ -16,5 +16,5 @@ cat <<EOF > /var/www/html/index.html
 </html>
 EOF
 
-sudo service httpd start
+sudo systemctl service httpd start
 chkconfig httpd on
